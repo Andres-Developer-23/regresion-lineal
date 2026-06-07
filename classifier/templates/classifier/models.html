@@ -1,0 +1,70 @@
+{% extends 'classifier/base.html' %}
+{% block title %}Modelos — ClasificadorML{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-cpu me-2"></i>Modelos Entrenados</h2>
+
+{% if models %}
+    <div class="row g-4">
+        {% for m in models %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 card-hover">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-truncate">{{ m.name }}</h6>
+                        {% if m.model_type == 'linear' %}
+                            <span class="badge bg-success">RL</span>
+                        {% else %}
+                            <span class="badge bg-info">{{ m.classes|length }} clases</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-1">
+                            <i class="bi bi-database me-1"></i>Dataset: {{ m.dataset.name }}
+                        </p>
+                        <p class="small text-muted mb-1">
+                            <i class="bi bi-bullseye me-1"></i>Target: <strong>{{ m.target }}</strong>
+                        </p>
+                        <p class="small text-muted mb-1">
+                            <i class="bi bi-layers me-1"></i>Features: {{ m.features|length }}
+                        </p>
+                        {% if m.metrics %}
+                            {% if m.model_type == 'linear' %}
+                                <p class="small mb-0">
+                                    <i class="bi bi-check-circle text-success me-1"></i>R²:
+                                    <strong>{{ m.metrics.r2|floatformat:4 }}</strong>
+                                </p>
+                            {% else %}
+                                <p class="small mb-0">
+                                    <i class="bi bi-check-circle text-success me-1"></i>Accuracy:
+                                    <strong>{{ m.metrics.accuracy|floatformat:4 }}</strong>
+                                </p>
+                            {% endif %}
+                        {% endif %}
+                        <p class="small text-muted mt-2 mb-0">
+                            <i class="bi bi-clock me-1"></i>{{ m.created_at|date:"d/m/Y H:i" }}
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'model_detail' m.pk %}" class="btn btn-sm btn-outline-info flex-grow-1">
+                                <i class="bi bi-eye me-1"></i>Detalle
+                            </a>
+                            <a href="{% url 'evaluate' m.pk %}" class="btn btn-sm btn-outline-warning flex-grow-1">
+                                <i class="bi bi-bar-chart me-1"></i>Evaluar
+                            </a>
+                            <a href="{% url 'predict' m.pk %}" class="btn btn-sm btn-outline-success flex-grow-1">
+                                <i class="bi bi-box-seam me-1"></i>Predecir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>No hay modelos entrenados.
+        <a href="{% url 'datasets' %}" class="alert-link">Selecciona un dataset</a> para entrenar un modelo.
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'classifier/base.html' %}
+{% block title %}Subir Dataset — ClasificadorML{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h2 class="mb-4"><i class="bi bi-upload me-2"></i>Subir Dataset</h2>
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field.errors }}
+                            {% if field.field.widget.input_type == 'file' %}
+                                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" id="{{ field.id_for_label }}" accept=".csv" required>
+                            {% elif field.field.widget.input_type == 'select' %}
+                                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select">
+                                    {% for value, label in field.field.choices %}
+                                        <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% elif field.field.widget.input_type == 'textarea' %}
+                                <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" rows="3">{{ field.value|default:'' }}</textarea>
+                            {% else %}
+                                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" required>
+                            {% endif %}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-cloud-upload me-1"></i>Subir y Explorar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Formato esperado</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Archivo en formato <strong>CSV</strong> (valores separados por coma o punto y coma).</li>
+                    <li>Primera fila debe contener los <strong>nombres de las columnas</strong>.</li>
+                    <li>Una de las columnas debe ser la <strong>variable objetivo</strong> (a predecir).</li>
+                    <li>Las columnas numéricas se usarán como <strong>características</strong>.</li>
+                    <li>La variable objetivo puede ser <strong>categórica</strong> (texto) o numérica discreta.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,371 @@
+{% extends 'classifier/base.html' %}
+{% block title %}Inicio — ClasificadorML{% endblock %}
+
+{% block content %}
+<div class="hero-section rounded-3 mb-5 p-5 text-center">
+    <h1 class="display-5 fw-bold mb-3">
+        <i class="bi bi-graph-up-arrow me-2"></i>Regresión Lineal y Clasificación
+    </h1>
+    <p class="lead mb-4 col-lg-8 mx-auto">
+        Plataforma interactiva para comprender la <strong>regresión logística</strong> como método de clasificación supervisada.
+        Carga datos, entrena modelos, evalúa su desempeño y realiza predicciones.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="{% url 'datasets' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-database me-2"></i>Ver Datasets
+        </a>
+        <a href="{% url 'upload' %}" class="btn btn-success btn-lg">
+            <i class="bi bi-upload me-2"></i>Subir Datos
+        </a>
+        <a href="{% url 'models' %}" class="btn btn-info btn-lg">
+            <i class="bi bi-cpu me-2"></i>Ver Modelos
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card text-center h-100 card-hover">
+            <div class="card-body">
+                <i class="bi bi-database display-6 text-primary"></i>
+                <h5 class="card-title mt-2">Datasets</h5>
+                <p class="display-6 fw-bold">{{ datasets_count }}</p>
+                <p class="card-text text-muted">disponibles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100 card-hover">
+            <div class="card-body">
+                <i class="bi bi-cpu display-6 text-success"></i>
+                <h5 class="card-title mt-2">Modelos</h5>
+                <p class="display-6 fw-bold">{{ models_count }}</p>
+                <p class="card-text text-muted">entrenados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100 card-hover">
+            <div class="card-body">
+                <i class="bi bi-bar-chart display-6 text-warning"></i>
+                <h5 class="card-title mt-2">Evaluación</h5>
+                <p class="card-text mt-3">Accuracy, precisión, recall, F1-score y matriz de confusión</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100 card-hover">
+            <div class="card-body">
+                <i class="bi bi-box-seam display-6 text-info"></i>
+                <h5 class="card-title mt-2">Predicción</h5>
+                <p class="card-text mt-3">Aplica el modelo a nuevos datos y obtén predicciones</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="accordion mb-5" id="conceptsAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#conceptA">
+                <strong>A. Regresión lineal y su relación con clasificación</strong>
+            </button>
+        </h2>
+        <div id="conceptA" class="accordion-collapse collapse show" data-bs-parent="#conceptsAccordion">
+            <div class="accordion-body">
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <h5>¿Cómo la regresión lineal se convierte en clasificación?</h5>
+                        <p>La <strong>regresión lineal</strong> produce valores continuos (ej: precio de una casa). Para clasificación necesitamos <strong>probabilidades</strong> entre 0 y 1.</p>
+                        <p>La <strong>regresión logística</strong> aplica la <strong>función sigmoide</strong> a la salida de la regresión lineal:</p>
+                        <div class="bg-dark p-3 rounded mb-3">
+                            <code>z = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ  (combinación lineal)</code><br>
+                            <code>P(y=1|x) = σ(z) = 1 / (1 + e<sup>-z</sup>)</code>
+                        </div>
+                        <p>Donde <strong>z</strong> es la combinación lineal (como en regresión lineal), y <strong>σ(z)</strong> la transforma a un valor entre 0 y 1.</p>
+                        <ul>
+                            <li>Si <strong>P ≥ 0.5</strong> → se clasifica como clase positiva</li>
+                            <li>Si <strong>P &lt; 0.5</strong> → se clasifica como clase negativa</li>
+                        </ul>
+                        <p class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i>Para múltiples clases, se entrena un clasificador binario por cada clase (One-vs-Rest).</p>
+                    </div>
+                    <div class="col-lg-5 text-center">
+                        <img src="data:image/png;base64,{{ sigmoid_plot }}" alt="Función Sigmoide" class="img-fluid border rounded">
+                        <p class="text-muted small mt-2">
+                            <strong>Interpretación:</strong> La curva sigmoide transforma cualquier valor real de z en una probabilidad entre 0 y 1.
+                            El punto donde z=0 corresponde a probabilidad 0.5 (umbral de decisión).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#conceptB">
+                <strong>B. Entrenamiento de un modelo supervisado</strong>
+            </button>
+        </h2>
+        <div id="conceptB" class="accordion-collapse collapse" data-bs-parent="#conceptsAccordion">
+            <div class="accordion-body">
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <h5>¿Cómo aprende el modelo?</h5>
+                        <p>El entrenamiento supervisado consiste en:</p>
+                        <ol>
+                            <li><strong>Alimentar</strong> al modelo con datos etiquetados (features + target conocido)</li>
+                            <li><strong>Calcular</strong> la predicción con los coeficientes actuales</li>
+                            <li><strong>Medir el error</strong> entre la predicción y el valor real usando la <strong>función de pérdida (log-loss)</strong>:
+                                <div class="bg-dark p-2 rounded mt-2 mb-2">
+                                    <code>J(β) = -[y·log(p) + (1-y)·log(1-p)]</code>
+                                </div>
+                                Donde p es la probabilidad predicha e y es la clase real (0 o 1).
+                            </li>
+                            <li><strong>Ajustar los coeficientes</strong> para minimizar el error, usando <strong>descenso por gradiente</strong> (cada iteración da un paso hacia el mínimo)</li>
+                            <li><strong>Repetir</strong> hasta que el error no disminuya significativamente (convergencia)</li>
+                        </ol>
+                        <div class="alert alert-info py-2">
+                            <i class="bi bi-lightbulb me-1"></i>
+                            <strong>Parámetro C (regularización):</strong> Controla el balance entre ajustar bien los datos (C grande) y mantener el modelo simple (C pequeño). 
+                            Un C muy grande puede causar <strong>overfitting</strong> (memoriza los datos) y uno muy pequeño <strong>underfitting</strong> (no aprende patrones).
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <h5>Separación entrenamiento / prueba</h5>
+                        <img src="data:image/png;base64,{{ train_test_plot }}" alt="Train/Test Split" class="img-fluid border rounded mb-2">
+                        <p class="text-muted small">
+                            Los datos se dividen en dos conjuntos:
+                            <strong>Entrenamiento</strong> (para aprender patrones) y 
+                            <strong>Prueba</strong> (para evaluar desempeño en datos no vistos).
+                            Esto permite detectar overfitting.
+                        </p>
+                        <div class="alert alert-warning py-2 mt-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <strong>Escalamiento de características:</strong> Para que el modelo converja correctamente, las features se escalan usando <strong>StandardScaler</strong> (media=0, desviación=1).
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#conceptC">
+                <strong>C. Evaluación del desempeño del modelo</strong>
+            </button>
+        </h2>
+        <div id="conceptC" class="accordion-collapse collapse" data-bs-parent="#conceptsAccordion">
+            <div class="accordion-body">
+                <div class="row g-4">
+                    <div class="col-lg-4">
+                        <h5>Matriz de Confusión</h5>
+                        <table class="table table-bordered table-sm text-center">
+                            <thead>
+                                <tr><th></th><th>Predicción Negativa</th><th>Predicción Positiva</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Real Negativo</th>
+                                    <td class="table-success"><strong>VN</strong> = Verdaderos Negativos</td>
+                                    <td class="table-danger"><strong>FP</strong> = Falsos Positivos<br><small>(Error Tipo I)</small></td>
+                                </tr>
+                                <tr>
+                                    <th>Real Positivo</th>
+                                    <td class="table-danger"><strong>FN</strong> = Falsos Negativos<br><small>(Error Tipo II)</small></td>
+                                    <td class="table-success"><strong>VP</strong> = Verdaderos Positivos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-lg-4">
+                        <h5>Métricas principales</h5>
+                        <div class="bg-dark p-3 rounded">
+                            <p class="mb-2"><strong>Accuracy</strong> = (VN + VP) / Total<br>
+                            <small class="text-muted">Proporción de aciertos total. Útil si clases están balanceadas.</small></p>
+                            <p class="mb-2"><strong>Precisión</strong> = VP / (VP + FP)<br>
+                            <small class="text-muted">De los que clasificamos como positivos, ¿cuántos lo son realmente?</small></p>
+                            <p class="mb-2"><strong>Recall</strong> = VP / (VP + FN)<br>
+                            <small class="text-muted">De los positivos reales, ¿cuántos identificamos?</small></p>
+                            <p class="mb-0"><strong>F1-Score</strong> = 2 × (Prec × Recall) / (Prec + Recall)<br>
+                            <small class="text-muted">Media armónica de precisión y recall. Útil con clases desbalanceadas.</small></p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <h5>Curva ROC y AUC</h5>
+                        <p>La <strong>curva ROC</strong> grafica la Tasa de Verdaderos Positivos vs la Tasa de Falsos Positivos para distintos umbrales.</p>
+                        <p>El <strong>AUC</strong> (Área bajo la curva) mide la capacidad de discriminación:</p>
+                        <ul class="small">
+                            <li><strong>AUC = 0.5</strong>: Aleatorio (sin poder predictivo)</li>
+                            <li><strong>0.7 - 0.8</strong>: Aceptable</li>
+                            <li><strong>0.8 - 0.9</strong>: Excelente</li>
+                            <li><strong>&gt; 0.9</strong>: Sobresaliente</li>
+                        </ul>
+                        <div class="alert alert-info py-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            La curva ROC solo aplica para clasificación <strong>binaria</strong>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#conceptD">
+                <strong>D. Aplicación del modelo sobre nuevos datos</strong>
+            </button>
+        </h2>
+        <div id="conceptD" class="accordion-collapse collapse" data-bs-parent="#conceptsAccordion">
+            <div class="accordion-body">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <h5>Proceso de predicción</h5>
+                        <ol>
+                            <li>El usuario <strong>ingresa los valores</strong> de las características del nuevo registro</li>
+                            <li>Los valores se <strong>escalan</strong> usando la misma transformación aplicada a los datos de entrenamiento</li>
+                            <li>El modelo calcula la <strong>combinación lineal</strong> z = β₀ + β₁x₁ + ...</li>
+                            <li>Se aplica la <strong>función sigmoide</strong> para obtener probabilidades por clase</li>
+                            <li>Se asigna la <strong>clase con mayor probabilidad</strong></li>
+                        </ol>
+                        <div class="bg-dark p-3 rounded mt-3">
+                            <h6>Ejemplo: Clasificación de flor Iris</h6>
+                            <p class="small mb-1">Si el modelo recibe: <em>largo sépalo=5.1, ancho sépalo=3.5, largo pétalo=1.4, ancho pétalo=0.2</em></p>
+                            <p class="small mb-0">El modelo podría predecir: <span class="badge bg-success">Setosa</span> (P = 98%)</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <h5>Interpretación de probabilidades</h5>
+                        <p>Las probabilidades indican <strong>qué tan seguro</strong> está el modelo de su predicción:</p>
+                        <ul>
+                            <li><strong>P &gt; 0.9</strong>: Alta confianza en la predicción</li>
+                            <li><strong>0.6 &lt; P &lt; 0.9</strong>: Confianza moderada</li>
+                            <li><strong>P &lt; 0.6</strong>: Baja confianza (las clases son casi igualmente probables)</li>
+                        </ul>
+                        <div class="alert alert-warning py-2 mt-3">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <strong>Precaución:</strong> El modelo solo es confiable para datos similares a los de entrenamiento.
+                            Predecir sobre datos muy diferentes (extrapolación) puede dar resultados erróneos.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#conceptE">
+                <strong>E. Uso responsable de herramientas de IA</strong>
+            </button>
+        </h2>
+        <div id="conceptE" class="accordion-collapse collapse" data-bs-parent="#conceptsAccordion">
+            <div class="accordion-body">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <h5>Principios de uso responsable</h5>
+                        <ul>
+                            <li><strong>Esta es una herramienta educativa</strong> — Los modelos entrenados aquí no deben usarse para decisiones críticas sin validación adicional.</li>
+                            <li><strong>Sesgo en los datos</strong> — Si los datos de entrenamiento tienen sesgos (ej: sobrerrepresentación de un grupo), el modelo los heredará y amplificará.</li>
+                            <li><strong>Correlación ≠ causalidad</strong> — Un coeficiente grande no significa que esa feature <em>cause</em> la clase. Solo indica correlación estadística.</li>
+                            <li><strong>Transparencia</strong> — Siempre documenta cómo se entrenó el modelo, con qué datos y bajo qué parámetros.</li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6">
+                        <h5>Buenas prácticas</h5>
+                        <ul>
+                            <li><strong>Valida siempre</strong> el modelo con datos no vistos durante el entrenamiento (test set)</li>
+                            <li><strong>No uses</strong> el modelo para predecir fuera del rango de los datos de entrenamiento</li>
+                            <li><strong>Revisa las métricas</strong> — Un accuracy alto puede engañar si las clases están muy desbalanceadas</li>
+                            <li><strong>Mantén supervisión humana</strong> sobre las decisiones automatizadas</li>
+                            <li><strong>Actualiza</strong> el modelo periódicamente si los datos cambian en el tiempo</li>
+                        </ul>
+                        <div class="alert alert-info py-2 mt-2">
+                            <i class="bi bi-mortarboard me-1"></i>
+                            El objetivo principal de esta plataforma es <strong>aprender</strong> los fundamentos de la clasificación supervisada, no producir modelos listos para producción.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Flujo de Trabajo</h5>
+            </div>
+            <div class="card-body">
+                <ol class="list-group list-group-numbered list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-start bg-transparent">
+                        <div><strong>Selecciona o carga</strong> un conjunto de datos (CSV)</div>
+                        <i class="bi bi-upload text-success fs-5"></i>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start bg-transparent">
+                        <div><strong>Explora</strong> los datos: columnas, tipos, estadísticas</div>
+                        <i class="bi bi-eye text-primary fs-5"></i>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start bg-transparent">
+                        <div><strong>Entrena</strong> un modelo de regresión logística</div>
+                        <i class="bi bi-gear text-warning fs-5"></i>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start bg-transparent">
+                        <div><strong>Interpreta</strong> los coeficientes del modelo</div>
+                        <i class="bi bi-search text-info fs-5"></i>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start bg-transparent">
+                        <div><strong>Evalúa</strong> el desempeño con métricas y gráficos</div>
+                        <i class="bi bi-bar-chart text-danger fs-5"></i>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start bg-transparent">
+                        <div><strong>Predice</strong> sobre nuevos datos</div>
+                        <i class="bi bi-box-seam text-success fs-5"></i>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Resumen de conceptos evaluados</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-primary">A</span></td>
+                            <td>Estructura de un problema de clasificación supervisada</td>
+                            <td><i class="bi bi-check-lg text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">B</span></td>
+                            <td>Separación de datos en entrenamiento y prueba</td>
+                            <td><i class="bi bi-check-lg text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">C</span></td>
+                            <td>Entrenamiento de un modelo de regresión logística</td>
+                            <td><i class="bi bi-check-lg text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">D</span></td>
+                            <td>Interpretación de los coeficientes del modelo</td>
+                            <td><i class="bi bi-check-lg text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">E</span></td>
+                            <td>Evaluación con métricas de clasificación</td>
+                            <td><i class="bi bi-check-lg text-success"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

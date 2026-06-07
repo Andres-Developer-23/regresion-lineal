@@ -1,0 +1,436 @@
+{% extends 'classifier/base.html' %}
+{% block title %}{{ model.name }} — ClasificadorML{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-cpu me-2"></i>{{ model.name }}</h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'evaluate' model.pk %}" class="btn btn-warning">
+            <i class="bi bi-bar-chart me-1"></i>Evaluar
+        </a>
+        <a href="{% url 'predict' model.pk %}" class="btn btn-success">
+            <i class="bi bi-box-seam me-1"></i>Predecir
+        </a>
+        <a href="{% url 'dataset_detail' dataset.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Dataset</h6>
+                <span class="h5">{{ dataset.name }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Variable objetivo</h6>
+                <span class="badge bg-primary fs-6">{{ model.target }}</span>
+            </div>
+        </div>
+    </div>
+    {% if model.model_type == 'logistic' %}
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Clases</h6>
+                {% for c in model.classes %}
+                    <span class="badge bg-info me-1">{{ c }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Features</h6>
+                <span class="display-6">{{ model.features|length }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if model.model_type == 'logistic' %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>¿Cómo interpretar este modelo?</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h6>La fórmula del modelo</h6>
+                <div class="bg-dark p-3 rounded">
+                    <code>log(p / (1-p)) = β₀ + β₁x₁ + β₂x₂ + ...</code>
+                </div>
+                <p class="small text-muted mt-2">
+                    Donde <strong>p</strong> es la probabilidad de pertenecer a la clase,
+                    <strong>β₀</strong> es el intercepto, y
+                    <strong>β₁, β₂, ...</strong> son los coeficientes de cada característica.
+                </p>
+                <p class="small text-muted">
+                    La expresión <strong>p/(1-p)</strong> se llama <strong>odds</strong> (razón de probabilidades).
+                    El logaritmo del odds es el <strong>log-odds</strong>.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <h6>Interpretación de coeficientes</h6>
+                <p class="small text-muted">
+                    Los coeficientes están escalados porque las características se normalizaron
+                    (media = 0, desviación estándar = 1) antes de entrenar. Esto permite <strong>comparar</strong>
+                    la magnitud de los coeficientes entre sí.
+                </p>
+                <p class="small text-muted mb-0">
+                    <strong>Coeficiente positivo:</strong> <span class="coef-positive">↑</span> A mayor valor de la característica,
+                    mayor probabilidad de la clase.<br>
+                    <strong>Coeficiente negativo:</strong> <span class="coef-negative">↓</span> A mayor valor de la característica,
+                    menor probabilidad de la clase.<br>
+                    <strong>Magnitud:</strong> A mayor valor absoluto, mayor impacto en la predicción.
+                </p>
+            </div>
+        </div>
+        <div class="alert alert-warning mt-3 mb-0 py-2">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            <strong>Correlación no implica causalidad.</strong> Un coeficiente grande indica una fuerte asociación estadística,
+            pero no necesariamente que la característica <em>cause</em> la clase. Siempre interpreta los resultados en contexto.
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>¿Cómo interpretar este modelo?</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h6>La fórmula del modelo lineal</h6>
+                <div class="bg-dark p-3 rounded">
+                    <code>ŷ = β₀ + β₁x₁ + β₂x₂ + ...</code>
+                </div>
+                <p class="small text-muted mt-2">
+                    Donde <strong>ŷ</strong> es el valor predicho,
+                    <strong>β₀</strong> es el intercepto, y
+                    <strong>β₁, β₂, ...</strong> son los coeficientes de cada característica.
+                </p>
+                <p class="small text-muted">
+                    A diferencia de la regresión logística, la salida es un <strong>valor numérico continuo</strong>,
+                    no una probabilidad. El modelo busca la recta (o hiperplano) que minimice el error cuadrático.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <h6>Interpretación de coeficientes</h6>
+                <p class="small text-muted">
+                    Los coeficientes están escalados porque las características se normalizaron
+                    (media = 0, desviación estándar = 1) antes de entrenar. Esto permite <strong>comparar</strong>
+                    la magnitud de los coeficientes entre sí.
+                </p>
+                <p class="small text-muted mb-0">
+                    <strong>Coeficiente positivo:</strong> <span class="coef-positive">↑</span> A mayor valor de la característica,
+                    mayor el valor predicho.<br>
+                    <strong>Coeficiente negativo:</strong> <span class="coef-negative">↓</span> A mayor valor de la característica,
+                    menor el valor predicho.<br>
+                    <strong>Magnitud:</strong> A mayor |coeficiente|, mayor impacto en la predicción.
+                </p>
+            </div>
+        </div>
+        <div class="alert alert-info mt-3 mb-0 py-2">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Intercepto (β₀):</strong> {{ model.intercept|floatformat:4 }} — Es el valor predicho cuando todas las características están en su media (valor 0 después de escalar).
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Parámetros del modelo</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tbody>
+                        {% if model.model_type == 'logistic' %}
+                            <tr><th>C (regularización)</th><td>{{ model.params.C }}</td></tr>
+                            <tr><th>Iteraciones máximas</th><td>{{ model.params.max_iter }}</td></tr>
+                        {% endif %}
+                        <tr><th>Semilla aleatoria</th><td>{{ model.params.random_state }}</td></tr>
+                        <tr><th>Test size</th><td>{{ model.params.test_size|floatformat:2 }} ({{ model.params.test_size|floatformat:0 }}%)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list me-2"></i>Características usadas</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">El modelo usa {{ model.features|length }} característica(s) para hacer la predicción:</p>
+                <ol class="mb-0">
+                    {% for feat in model.features %}
+                        <li><code>{{ feat }}</code></li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if model.model_type == 'logistic' %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Coeficientes del modelo (log-odds)</h5>
+        <span class="badge bg-info">{{ interpretations|length }} características</span>
+    </div>
+    <div class="card-body">
+        <p class="small text-muted mb-3">
+            Las barras <span style="color:#2ecc71;font-weight:bold;">verdes</span> aumentan la probabilidad de la clase,
+            las <span style="color:#e74c3c;font-weight:bold;">rojas</span> la disminuyen.
+            El centro (│) marca coeficiente = 0 (sin efecto).
+        </p>
+        <div class="d-flex align-items-center mb-2 small text-muted">
+            <div class="col-4 text-end pe-2"><strong>Característica</strong></div>
+            <div class="col-5 text-center"><strong>— Menos probable │ Más probable →</strong></div>
+            <div class="col-3 ps-2"><strong>Valor</strong></div>
+        </div>
+        <div class="coef-bars">
+            {% for item in interpretations %}
+                <div class="row align-items-center mb-1 coef-row py-1 rounded" title="{{ item.interpretation }}">
+                    <div class="col-4 text-end pe-2 text-truncate">
+                        <span class="badge bg-info" style="font-size:9px;">{{ item.class_name }}</span>
+                        <code style="font-size:12px;">{{ item.feature }}</code>
+                    </div>
+                    <div class="col-5">
+                        <div class="coef-bar-container position-relative" style="height:22px; background:#2a2a2a; border-radius:4px;">
+                            <div class="position-absolute top-0 start-50 bottom-0" style="width:2px; background:#888; z-index:2;"></div>
+                            {% if item.coefficient > 0 %}
+                                <div class="coef-bar-fill position-absolute top-0 bottom-0 rounded-end"
+                                     style="left:50%; width:{{ item.abs_coef|floatformat:4 }}; background:linear-gradient(90deg,#27ae60,#2ecc71); z-index:1;"
+                                     data-width="{{ item.abs_coef }}"></div>
+                            {% elif item.coefficient < 0 %}
+                                <div class="coef-bar-fill position-absolute top-0 bottom-0 rounded-start"
+                                     style="right:50%; width:{{ item.abs_coef|floatformat:4 }}; background:linear-gradient(270deg,#c0392b,#e74c3c); z-index:1; direction:rtl;"
+                                     data-width="{{ item.abs_coef }}"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-3 ps-2 d-flex align-items-center gap-1">
+                        <span style="font-weight:bold; font-size:13px; {% if item.coefficient > 0 %}color:#2ecc71{% elif item.coefficient < 0 %}color:#e74c3c{% endif %}">
+                            {{ item.coefficient|floatformat:4 }}
+                        </span>
+                        {% if item.abs_coef >= 1.0 %}
+                            <span class="badge bg-danger" style="font-size:9px;">Alto</span>
+                        {% elif item.abs_coef >= 0.5 %}
+                            <span class="badge bg-warning text-dark" style="font-size:9px;">Medio</span>
+                        {% else %}
+                            <span class="badge bg-secondary" style="font-size:9px;">Bajo</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var maxAbs = {{ max_abs_coef|stringformat:".4f" }};
+    document.querySelectorAll('.coef-bar-fill').forEach(function(el) {
+        var absVal = parseFloat(el.dataset.width);
+        var pct = (absVal / maxAbs) * 47;
+        el.style.width = Math.min(pct, 47) + '%';
+    });
+});
+</script>
+
+<style>
+.coef-row:hover { background: rgba(255,255,255,0.05); }
+.coef-row { transition: background 0.2s; }
+</style>
+
+{% if top_features %}
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Características más influyentes por clase</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% for class_name, items in top_features.items %}
+                <div class="col-md-6">
+                    <h6><span class="badge bg-info">{{ class_name }}</span></h6>
+                    <ol class="list-group list-group-flush">
+                        {% for item in items %}
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-start">
+                                <div>
+                                    {% if forloop.counter <= 3 %}
+                                        <i class="bi bi-star-fill text-warning me-1"></i>
+                                    {% endif %}
+                                    <code>{{ item.feature }}</code>
+                                </div>
+                                <span class="badge {% if item.coefficient > 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                    {{ item.coefficient|floatformat:3 }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            {% endfor %}
+        </div>
+        <p class="text-muted small mt-2 mb-0">
+            <i class="bi bi-star-fill text-warning me-1"></i> Las 3 características con mayor |coeficiente| por clase.
+            Cuanto mayor el valor absoluto, más influye en la decisión del modelo.
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-search me-2"></i>Interpretación de coeficientes (detalle)</h5>
+    </div>
+    <div class="card-body">
+        <p class="small text-muted mb-3">
+            Ordenado por <strong>impacto</strong> (|coeficiente| de mayor a menor).
+            Los coeficientes están en escala de <strong>log-odds</strong>: un valor de 1.0 significa que
+            el odds se multiplica por <strong>e¹ = 2.72</strong> por cada desviación estándar.
+        </p>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Clase</th>
+                        <th>Feature</th>
+                        <th>Coeficiente (log-odds)</th>
+                        <th>Impacto</th>
+                        <th>Odds Ratio</th>
+                        <th>Interpretación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in interpretations %}
+                        <tr>
+                            <td>
+                                {% if forloop.counter <= 3 %}
+                                    <i class="bi bi-star-fill text-warning" title="Top 3"></i>
+                                {% else %}
+                                    {{ forloop.counter }}
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-info">{{ item.class_name }}</span></td>
+                            <td><code>{{ item.feature }}</code></td>
+                            <td class="{% if item.coefficient > 0 %}coef-positive{% elif item.coefficient < 0 %}coef-negative{% endif %}">
+                                <strong>{{ item.coefficient|floatformat:4 }}</strong>
+                                {% if item.coefficient > 0 %}
+                                    <i class="bi bi-arrow-up-short"></i>
+                                {% elif item.coefficient < 0 %}
+                                    <i class="bi bi-arrow-down-short"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% with abs_coef=item.abs_coef width_pct=item.abs_coef|stringformat:".0f" %}
+                                    {% if item.abs_coef >= 1.0 %}
+                                        <span class="badge bg-danger">Alto</span>
+                                    {% elif item.abs_coef >= 0.5 %}
+                                        <span class="badge bg-warning text-dark">Medio</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Bajo</span>
+                                    {% endif %}
+                                    <div class="progress mt-1" style="height: 4px; width: 80px;">
+                                        <div class="progress-bar bg-info" style="width: {% widthratio item.abs_coef max_abs_coef 100 %}%"></div>
+                                    </div>
+                                {% endwith %}
+                            </td>
+                            <td><code>{{ item.coefficient|stringformat:"f"|slice:":8" }}</code></td>
+                            <td class="small">{{ item.interpretation }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>De coeficiente a probabilidad</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">El coeficiente (log-odds) se convierte a <strong>odds ratio</strong> con la fórmula:</p>
+                <div class="bg-dark p-2 rounded mb-2 text-center">
+                    <code>odds_ratio = e<sup>coeficiente</sup></code>
+                </div>
+                {% with top=interpretations|first %}
+                    {% if top %}
+                        <p class="small">
+                            <strong>Ejemplo con la feature más influyente:</strong>
+                        </p>
+                        <ul class="small">
+                            <li>Feature: <code>{{ top.feature }}</code></li>
+                            <li>Coeficiente (log-odds): <strong>{{ top.coefficient|floatformat:4 }}</strong></li>
+                            <li>Odds ratio = e<sup>{{ top.coefficient|floatformat:4 }}</sup> = <strong>{{ top.coefficient|floatformat:2 }}</strong></li>
+                            <li>
+                                {% if top.coefficient > 0 %}
+                                    Por cada <strong>1 desviación estándar</strong> de aumento en <code>{{ top.feature }}</code>,
+                                    el <strong>odds</strong> de pertenecer a la clase <strong>{{ top.class_name }}</strong>
+                                    se multiplica por <strong>{{ top.coefficient|floatformat:2 }}</strong>.
+                                {% else %}
+                                    Por cada <strong>1 desviación estándar</strong> de aumento en <code>{{ top.feature }}</code>,
+                                    el <strong>odds</strong> de pertenecer a la clase <strong>{{ top.class_name }}</strong>
+                                    se divide por <strong>{{ top.coefficient|floatformat:2 }}</strong>.
+                                {% endif %}
+                            </li>
+                        </ul>
+                        <div class="alert alert-secondary py-2 small mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Odds = p/(1-p)</strong>. Si el odds es 2, significa que es 2 veces más probable
+                            pertenecer a la clase que no pertenecer.
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>Estructura del clasificador</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ classification_plot }}" alt="Matriz de Confusión explicada" class="img-fluid">
+                <p class="text-muted small mt-2">
+                    <strong>Matriz de Confusión</strong> — La regresión logística calcula una <strong>frontera lineal</strong> entre las clases.
+                    Los puntos se clasifican según qué lado de la frontera se encuentren.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Función Sigmoide</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ sigmoid_plot }}" alt="Sigmoide" class="img-fluid">
+                <p class="text-muted small mt-2">
+                    La salida lineal del modelo se transforma en una probabilidad mediante la función sigmoide.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

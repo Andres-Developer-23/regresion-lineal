@@ -1,0 +1,428 @@
+{% extends 'classifier/base.html' %}
+{% block title %}Evaluar — {{ model.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-bar-chart me-2"></i>Evaluación del Modelo</h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'predict' model.pk %}" class="btn btn-success">
+            <i class="bi bi-box-seam me-1"></i>Predecir
+        </a>
+        <a href="{% url 'model_detail' model.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">{{ model.name }} — Dataset: {{ dataset.name }}</h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-0">
+            <strong>Target:</strong> {{ model.target }} |
+            <strong>Test size:</strong> {{ model.params.test_size|floatformat:0 }}% |
+            <strong>Tipo:</strong>
+            {% if model.model_type == 'linear' %}
+                <span class="badge bg-success">Regresión Lineal</span>
+            {% else %}
+                <span class="badge bg-primary">Regresión Logística</span>
+                | <strong>Clases:</strong>
+                {% for c in class_names %}
+                    <span class="badge bg-info">{{ c }}</span>
+                {% endfor %}
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+{% if model.model_type == 'linear' %}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card metric-card accuracy">
+            <div class="card-body text-center">
+                <h6 class="text-muted">R² (Coef. Determinación)</h6>
+                <span class="display-6 text-primary">{{ metrics.r2|floatformat:4 }}</span>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar bg-primary" style="width: {% widthratio metrics.r2 1 100 %}%"></div>
+                </div>
+                <small class="text-muted">Proporción de varianza explicada por el modelo</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">RMSE</h6>
+                <span class="display-6 text-success">{{ metrics.rmse|floatformat:4 }}</span>
+                <small class="text-muted">Raíz del Error Cuadrático Medio</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">MSE</h6>
+                <span class="display-6 text-warning">{{ metrics.mse|floatformat:4 }}</span>
+                <small class="text-muted">Error Cuadrático Medio</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">MAE</h6>
+                <span class="display-6 text-info">{{ metrics.mae|floatformat:4 }}</span>
+                <small class="text-muted">Error Absoluto Medio</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Residuales vs Valores Predichos</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ residuals_plot }}" alt="Residuales" class="img-fluid">
+                <p class="text-muted small mt-2">
+                    Idealmente los residuales se distribuyen simétricamente alrededor de cero (línea roja)
+                    sin patrones evidentes. Patrones en forma de "embudo" indican heterocedasticidad.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Valores Reales vs Predichos</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ predicted_vs_actual_plot }}" alt="Reales vs Predichos" class="img-fluid">
+                <p class="text-muted small mt-2">
+                    Cuanto más cerca de la diagonal (línea roja), mejor es la predicción.
+                    Puntos muy alejados indican errores grandes del modelo.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card metric-card accuracy">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Accuracy</h6>
+                <span class="display-6 text-primary">{{ metrics.accuracy|floatformat:4 }}</span>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar bg-primary" style="width: {% widthratio metrics.accuracy 1 100 %}%"></div>
+                </div>
+                <small class="text-muted">Exactitud global: (VP + VN) / Total</small>
+            </div>
+        </div>
+    </div>
+    {% if metrics.roc_auc %}
+        <div class="col-md-3">
+            <div class="card metric-card auc">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">AUC-ROC</h6>
+                    <span class="display-6" style="color: #6f42c1;">{{ metrics.roc_auc|floatformat:4 }}</span>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar" style="width: {% widthratio metrics.roc_auc 1 100 %}%;background-color:#6f42c1;"></div>
+                    </div>
+                    <small class="text-muted">Área bajo la curva ROC (0.5=aleatorio, 1.0=perfecto)</small>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% if metrics.per_class %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i>Métricas por clase</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Clase</th>
+                            <th>Precisión</th>
+                            <th>Recall</th>
+                            <th>F1-Score</th>
+                            <th>Soporte</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class_name, class_metrics in metrics.per_class.items %}
+                            <tr>
+                                <td><span class="badge bg-info">{{ class_name }}</span></td>
+                                <td>
+                                    <span class="badge {% if class_metrics.precision >= 0.8 %}bg-success{% elif class_metrics.precision >= 0.5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ class_metrics.precision|floatformat:4 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if class_metrics.recall >= 0.8 %}bg-success{% elif class_metrics.recall >= 0.5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ class_metrics.recall|floatformat:4 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if class_metrics.f1_score >= 0.8 %}bg-success{% elif class_metrics.f1_score >= 0.5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ class_metrics.f1_score|floatformat:4 }}
+                                    </span>
+                                </td>
+                                <td>{{ class_metrics.support }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-grid-3x3 me-2"></i>Matriz de Confusión del modelo</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ cm_plot }}" alt="Matriz de Confusión" class="img-fluid">
+                <p class="text-muted small mt-2">
+                    Filas: valores reales &nbsp;|&nbsp; Columnas: predicciones<br>
+                    La diagonal principal (arriba-izquierda a abajo-derecha) son aciertos.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Estructura de la Matriz</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ cm_explanation }}" alt="Explicación Matriz" class="img-fluid">
+                <p class="text-muted small mt-2">
+                    <strong>VN</strong> = Verdaderos Negativos &nbsp;|&nbsp; <strong>FP</strong> = Falsos Positivos (Error Tipo I)<br>
+                    <strong>FN</strong> = Falsos Negativos (Error Tipo II) &nbsp;|&nbsp; <strong>VP</strong> = Verdaderos Positivos
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Coeficientes del modelo</h5>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted small">Los coeficientes se muestran en la <a href="{% url 'model_detail' model.pk %}">página de detalle del modelo</a>.</p>
+            </div>
+        </div>
+    </div>
+    {% if roc_plot %}
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Curva ROC</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="data:image/png;base64,{{ roc_plot }}" alt="Curva ROC" class="img-fluid">
+                    <p class="text-muted small mt-2">
+                        AUC = {{ metrics.roc_auc|floatformat:4 }}<br>
+                        {% if metrics.roc_auc >= 0.9 %}
+                            <span class="text-success">Sobresaliente — El modelo discrimina excelentemente entre clases.</span>
+                        {% elif metrics.roc_auc >= 0.8 %}
+                            <span class="text-success">Excelente — Buena capacidad de discriminación.</span>
+                        {% elif metrics.roc_auc >= 0.7 %}
+                            <span class="text-warning">Aceptable — Capacidad de discriminación moderada.</span>
+                        {% elif metrics.roc_auc >= 0.5 %}
+                            <span class="text-danger">Pobre — Cerca de predicción aleatoria.</span>
+                        {% else %}
+                            <span class="text-danger">El modelo está peor que aleatorio.</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-question-circle me-2"></i>Explicación detallada de las métricas</h5>
+    </div>
+    <div class="card-body">
+        {% if model.model_type == 'linear' %}
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-r-square text-primary me-1"></i>R² (Coeficiente de Determinación)</h6>
+                    <p class="small text-muted mb-1">
+                        <strong>Fórmula:</strong> R² = 1 — (SS_residual / SS_total)
+                    </p>
+                    <p class="small text-muted mb-0">
+                        Indica qué proporción de la <strong>varianza</strong> de la variable objetivo es explicada por el modelo.
+                        R² = 1 significa que el modelo explica toda la variabilidad (predicción perfecta).
+                        R² = 0 significa que el modelo no explica nada mejor que la media.
+                        Puede ser negativo si el modelo es peor que usar el promedio.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-x-circle text-danger me-1"></i>RMSE (Raíz del Error Cuadrático Medio)</h6>
+                    <p class="small text-muted mb-1">
+                        <strong>Fórmula:</strong> RMSE = √(Σ(ŷᵢ — yᵢ)² / n)
+                    </p>
+                    <p class="small text-muted mb-0">
+                        Mide el <strong>error promedio</strong> en las mismas unidades que la variable objetivo.
+                        Penaliza más los errores grandes que los pequeños (por elevar al cuadrado).
+                        Es la métrica más interpretable para regresión.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-calculator text-warning me-1"></i>MSE (Error Cuadrático Medio)</h6>
+                    <p class="small text-muted mb-1">
+                        <strong>Fórmula:</strong> MSE = Σ(ŷᵢ — yᵢ)² / n
+                    </p>
+                    <p class="small text-muted mb-0">
+                        Similar al RMSE pero sin la raíz cuadrada. Está en unidades al cuadrado
+                        de la variable objetivo. Se usa como función de pérdida porque es
+                        <strong>diferenciable</strong> y penaliza fuertemente errores grandes.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-arrows-expand text-info me-1"></i>MAE (Error Absoluto Medio)</h6>
+                    <p class="small text-muted mb-1">
+                        <strong>Fórmula:</strong> MAE = Σ|ŷᵢ — yᵢ| / n
+                    </p>
+                    <p class="small text-muted mb-0">
+                        Promedio de los errores absolutos. A diferencia del MSE, <strong>no penaliza</strong>
+                        más los errores grandes. Es más robusta ante outliers (valores atípicos).
+                        Siempre es menor o igual que el RMSE.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-graph-up text-success me-1"></i>Gráfico de Residuales</h6>
+                    <p class="small text-muted mb-0">
+                        Los residuales (y — ŷ) deben distribuirse aleatoriamente alrededor de cero
+                        sin patrones. Si se ve un patrón (embudo, curva), el modelo puede tener
+                        <strong>heterocedasticidad</strong> o <strong>no linealidad</strong>.
+                        El histograma debe ser aproximadamente normal centrado en 0.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-check-circle text-primary me-1"></i>Reales vs Predichos</h6>
+                    <p class="small text-muted mb-0">
+                        Gráfico de dispersión que compara valores reales con predicciones.
+                        Idealmente los puntos se alinean en la diagonal. Desviaciones sistemáticas
+                        indican que el modelo <strong>subestima</strong> o <strong>sobreestima</strong>
+                        ciertos rangos de valores.
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-check-circle text-success me-1"></i>Accuracy (Exactitud)</h6>
+                    <p class="small text-muted mb-1">
+                        <strong>Fórmula:</strong> (VP + VN) / (VP + VN + FP + FN)
+                    </p>
+                    <p class="small text-muted mb-0">
+                        Proporción de predicciones correctas sobre el total. Es la métrica más intuitiva,
+                        pero puede <strong>engañar</strong> cuando las clases están desbalanceadas
+                        (ej: 95% clase A, 5% clase B → un modelo que siempre predice A tendrá 95% de accuracy).
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-crosshair text-primary me-1"></i>Precisión</h6>
+                    <p class="small text-muted mb-1">
+                        <strong>Fórmula:</strong> VP / (VP + FP)
+                    </p>
+                    <p class="small text-muted mb-0">
+                        De todos los elementos que el modelo clasificó como positivos,
+                        ¿cuántos realmente lo son? Mide qué tan <strong>confiable</strong>
+                        es cuando predice la clase positiva. Una precisión baja significa muchos falsos positivos.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-search text-warning me-1"></i>Recall (Sensibilidad)</h6>
+                    <p class="small text-muted mb-1">
+                        <strong>Fórmula:</strong> VP / (VP + FN)
+                    </p>
+                    <p class="small text-muted mb-0">
+                        De todos los elementos positivos reales, ¿cuántos fueron identificados?
+                        Mide qué tan <strong>completo</strong> es el modelo. Un recall bajo significa
+                        muchos falsos negativos (se escapan casos positivos).
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-shield-shaded text-danger me-1"></i>F1-Score</h6>
+                    <p class="small text-muted mb-1">
+                        <strong>Fórmula:</strong> 2 × (Precisión × Recall) / (Precisión + Recall)
+                    </p>
+                    <p class="small text-muted mb-0">
+                        Media armónica de precisión y recall. Es útil cuando hay <strong>clases desbalanceadas</strong>
+                        porque considera tanto los falsos positivos como los falsos negativos.
+                        Un F1 alto significa buen balance entre precisión y recall.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-bar-chart-fill" style="color: #6f42c1;"></i> AUC-ROC</h6>
+                    <p class="small text-muted mb-1">
+                        Área bajo la curva de Tasa de VP vs Tasa de FP
+                    </p>
+                    <p class="small text-muted mb-0">
+                        Mide la capacidad del modelo para <strong>discriminar</strong> entre clases
+                        a través de todos los posibles umbrales de decisión.
+                        <strong>0.5</strong> = aleatorio, <strong>1.0</strong> = clasificador perfecto.
+                        Solo disponible para clasificación binaria.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h6><i class="bi bi-exclamation-triangle text-warning me-1"></i>Clases desbalanceadas</h6>
+                    <p class="small text-muted mb-0">
+                        Cuando una clase tiene muchos más ejemplos que otra, el accuracy puede ser engañoso.
+                        En esos casos, <strong>F1-score</strong> y la <strong>matriz de confusión</strong>
+                        son más informativos. También se puede usar el parámetro <code>class_weight</code>
+                        para dar más peso a la clase minoritaria (no disponible en esta plataforma).
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

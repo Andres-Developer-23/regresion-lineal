@@ -1,0 +1,58 @@
+{% extends 'classifier/base.html' %}
+{% block title %}Datasets — ClasificadorML{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-database me-2"></i>Datasets</h2>
+    <a href="{% url 'upload' %}" class="btn btn-success">
+        <i class="bi bi-upload me-1"></i>Subir Dataset
+    </a>
+</div>
+
+{% if datasets %}
+    <div class="row g-4">
+        {% for ds in datasets %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 card-hover {% if ds.is_preloaded %}border-success{% endif %}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            {% if ds.is_preloaded %}
+                                <i class="bi bi-star-fill text-warning me-1" title="Pre-cargado"></i>
+                            {% else %}
+                                <i class="bi bi-upload text-info me-1"></i>
+                            {% endif %}
+                            {{ ds.name }}
+                        </h5>
+                        <span class="badge bg-secondary">{{ ds.rows }} × {{ ds.columns }}</span>
+                    </div>
+                    <div class="card-body">
+                        {% if ds.description %}
+                            <p class="card-text text-muted">{{ ds.description|truncatewords:30 }}</p>
+                        {% endif %}
+                        <p class="small text-muted mb-2">
+                            <i class="bi bi-clock me-1"></i>{{ ds.created_at|date:"d/m/Y H:i" }}
+                        </p>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'dataset_detail' ds.pk %}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                <i class="bi bi-eye me-1"></i>Ver
+                            </a>
+                            <a href="{% url 'train' ds.pk %}" class="btn btn-outline-success btn-sm flex-grow-1">
+                                <i class="bi bi-gear me-1"></i>Entrenar
+                            </a>
+                            <a href="{% url 'delete_dataset' ds.pk %}" class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('¿Eliminar este dataset y sus modelos asociados?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>No hay datasets disponibles.
+        <a href="{% url 'upload' %}" class="alert-link">Sube tu primer dataset</a>.
+    </div>
+{% endif %}
+{% endblock %}
