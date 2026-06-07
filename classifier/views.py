@@ -430,3 +430,10 @@ def delete_model(request, pk):
     trained.delete()
     messages.success(request, 'Modelo eliminado correctamente.')
     return redirect('dataset_detail', pk=pk_val)
+
+
+def tutorial(request):
+    regularization_plot = utils.generate_regularization_plot()
+    return render(request, 'classifier/tutorial.html', {
+        'regularization_plot': regularization_plot,
+    })

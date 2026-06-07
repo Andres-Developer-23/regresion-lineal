@@ -1,0 +1,499 @@
+{% extends 'classifier/base.html' %}
+{% load static %}
+{% block title %}Tutorial — ClasificadorML{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-book me-2"></i>Tutorial de uso</h2>
+    <p class="text-muted lead">Aprende a usar la plataforma paso a paso, desde los datos hasta la predicción.</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center h-100 border-primary">
+            <div class="card-body">
+                <div class="display-4 text-primary mb-2"><i class="bi bi-database"></i></div>
+                <h5>1. Conoce los datos</h5>
+                <p class="small text-muted">Explora datasets precargados o sube tu propio CSV.</p>
+                <a href="{% url 'datasets' %}" class="btn btn-sm btn-outline-primary">Ir a Datasets</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center h-100 border-success">
+            <div class="card-body">
+                <div class="display-4 text-success mb-2"><i class="bi bi-gear"></i></div>
+                <h5>2. Elige y entrena</h5>
+                <p class="small text-muted">Selecciona regresión logística o lineal y configura parámetros.</p>
+                <a href="{% url 'datasets' %}" class="btn btn-sm btn-outline-success">Elegir dataset</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center h-100 border-warning">
+            <div class="card-body">
+                <div class="display-4 text-warning mb-2"><i class="bi bi-bar-chart"></i></div>
+                <h5>3. Evalúa</h5>
+                <p class="small text-muted">Revisa métricas, gráficos y entiende el rendimiento.</p>
+                <a href="{% url 'models' %}" class="btn btn-sm btn-outline-warning">Ver modelos</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center h-100 border-info">
+            <div class="card-body">
+                <div class="display-4 text-info mb-2"><i class="bi bi-box-seam"></i></div>
+                <h5>4. Predice</h5>
+                <p class="small text-muted">Ingresa valores nuevos y obtén predicciones al instante.</p>
+                <a href="{% url 'models' %}" class="btn btn-sm btn-outline-info">Seleccionar modelo</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="bi bi-question-circle me-2"></i>¿Qué es este proyecto?</h4>
+    </div>
+    <div class="card-body">
+        <p>Esta plataforma te permite crear modelos de <strong>aprendizaje supervisado</strong> sin escribir código. Hay dos tipos de modelos:</p>
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h5 class="text-primary"><i class="bi bi-diagram-3 me-1"></i>Regresión Logística</h5>
+                    <p class="small text-muted mb-0">Para problemas de <strong>clasificación</strong>: la variable objetivo es categórica (ej: maligno/benigno, tipo de flor). El modelo calcula la probabilidad de pertenencia a cada clase y asigna la más probable.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <h5 class="text-success"><i class="bi bi-graph-up me-1"></i>Regresión Lineal</h5>
+                    <p class="small text-muted mb-0">Para problemas de <strong>predicción numérica</strong>: la variable objetivo es un valor continuo (ej: precio, temperatura, progresión de enfermedad). El modelo encuentra la recta que mejor se ajusta a los datos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-database me-2"></i>Paso 1: Explora los datos</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h5><i class="bi bi-folder me-1"></i>Datasets precargados</h5>
+                <p>La plataforma incluye tres datasets de ejemplo:</p>
+                <div class="list-group mb-3">
+                    <div class="list-group-item bg-transparent">
+                        <div class="d-flex justify-content-between">
+                            <div><strong>Iris</strong> <span class="badge bg-primary">Clasificación</span></div>
+                            <small class="text-muted">150 filas, 4 features, 3 clases</small>
+                        </div>
+                        <p class="small text-muted mb-0 mt-1">Características de pétalos y sépalos para clasificar especies de flores.</p>
+                    </div>
+                    <div class="list-group-item bg-transparent">
+                        <div class="d-flex justify-content-between">
+                            <div><strong>Cáncer de Mama</strong> <span class="badge bg-primary">Clasificación</span></div>
+                            <small class="text-muted">569 filas, 30 features, 2 clases</small>
+                        </div>
+                        <p class="small text-muted mb-0 mt-1">Características de células para diagnosticar tumores benignos o malignos.</p>
+                    </div>
+                    <div class="list-group-item bg-transparent">
+                        <div class="d-flex justify-content-between">
+                            <div><strong>Diabetes</strong> <span class="badge bg-success">Regresión</span></div>
+                            <small class="text-muted">442 filas, 10 features</small>
+                        </div>
+                        <p class="small text-muted mb-0 mt-1">Datos médicos para predecir la progresión de la diabetes.</p>
+                    </div>
+                </div>
+                <a href="{% url 'datasets' %}" class="btn btn-primary"><i class="bi bi-eye me-1"></i>Ver datasets</a>
+            </div>
+            <div class="col-lg-6">
+                <h5><i class="bi bi-upload me-1"></i>Subir tu propio dataset</h5>
+                <p>Puedes cargar cualquier archivo CSV con tus propios datos:</p>
+                <ul class="small">
+                    <li>El archivo debe tener <strong>extensión .csv</strong></li>
+                    <li>La <strong>primera fila</strong> debe contener los nombres de las columnas</li>
+                    <li>Puedes elegir entre delimitador <strong>coma (,) o punto y coma (;)</strong></li>
+                    <li>Las columnas numéricas se usarán como características</li>
+                    <li>Una columna será la <strong>variable objetivo</strong> (a predecir)</li>
+                </ul>
+                <a href="{% url 'upload' %}" class="btn btn-success"><i class="bi bi-cloud-upload me-1"></i>Subir CSV</a>
+            </div>
+        </div>
+        <div class="alert alert-info mt-3 mb-0 py-2">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Tip:</strong> En la página de detalle del dataset puedes ver una vista previa de los datos, estadísticas descriptivas y los valores únicos de cada columna. Esto te ayuda a elegir la mejor variable objetivo.
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-gear me-2"></i>Paso 2: Elige el tipo de modelo y entrena</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h5>¿Qué tipo de modelo elegir?</h5>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Regresión Logística</th>
+                            <th>Regresión Lineal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Variable objetivo</td>
+                            <td>Categórica (clases)</td>
+                            <td>Numérica continua</td>
+                        </tr>
+                        <tr>
+                            <td>Ejemplo</td>
+                            <td>¿Benigno o maligno?</td>
+                            <td>¿Cuánto vale la casa?</td>
+                        </tr>
+                        <tr>
+                            <td>Salida</td>
+                            <td>Probabilidad + clase</td>
+                            <td>Valor numérico</td>
+                        </tr>
+                        <tr>
+                            <td>Evaluación</td>
+                            <td>Accuracy, F1, ROC</td>
+                            <td>R², RMSE, MAE</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-lg-6">
+                <h5>Parámetros de entrenamiento</h5>
+                <div class="accordion" id="paramsAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paramTestSize">
+                                <strong>Test size (proporción de prueba)</strong>
+                            </button>
+                        </h2>
+                        <div id="paramTestSize" class="accordion-collapse collapse" data-bs-parent="#paramsAccordion">
+                            <div class="accordion-body small">
+                                Determina qué porcentaje de los datos se reserva para evaluar el modelo.
+                                El resto se usa para entrenar. Un valor típico es <strong>20% (0.2)</strong>.
+                                Más datos de prueba dan una evaluación más confiable pero menos datos para aprender.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paramC">
+                                <strong>C (regularización) — Solo logística</strong>
+                            </button>
+                        </h2>
+                        <div id="paramC" class="accordion-collapse collapse" data-bs-parent="#paramsAccordion">
+                            <div class="accordion-body small">
+                                Controla la <strong>complejidad</strong> del modelo. C es la inversa de la fuerza de regularización:
+                                <ul class="mb-0 mt-1">
+                                    <li><strong>C pequeño</strong> (0.01): modelo más simple, menos overfitting</li>
+                                    <li><strong>C = 1.0</strong>: balance estándar</li>
+                                    <li><strong>C grande</strong> (100): modelo más complejo, más ajuste a los datos</li>
+                                </ul>
+                                <img src="data:image/png;base64,{{ regularization_plot }}" alt="Efecto de la regularización" class="img-fluid mt-2 rounded">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paramIter">
+                                <strong>Max iter (iteraciones) — Solo logística</strong>
+                            </button>
+                        </h2>
+                        <div id="paramIter" class="accordion-collapse collapse" data-bs-parent="#paramsAccordion">
+                            <div class="accordion-body small">
+                                Número de pasos que el algoritmo realiza para encontrar los coeficientes óptimos.
+                                Si ves una advertencia de que el modelo <strong>no convergió</strong>, aumenta este valor (500-1000).
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paramSeed">
+                                <strong>Random state (semilla aleatoria)</strong>
+                            </button>
+                        </h2>
+                        <div id="paramSeed" class="accordion-collapse collapse" data-bs-parent="#paramsAccordion">
+                            <div class="accordion-body small">
+                                Fija la semilla del generador aleatorio para que los resultados sean <strong>reproducibles</strong>.
+                                Usar la misma semilla siempre produce la misma separación train/test y los mismos coeficientes.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-warning mt-3 mb-0 py-2">
+            <i class="bi bi-lightbulb me-1"></i>
+            <strong>Importante:</strong> Antes de entrenar, los datos se <strong>escalan automáticamente</strong> (media=0, desviación=1).
+            Esto permite comparar la magnitud de los coeficientes entre sí y mejora la convergencia del modelo.
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Paso 3: Evalúa el modelo</h4>
+    </div>
+    <div class="card-body">
+        <p>Después de entrenar, puedes evaluar el rendimiento del modelo con los datos de prueba. Las métricas disponibles dependen del tipo de modelo:</p>
+
+        <ul class="nav nav-tabs mb-3" id="evalTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="logistic-tab" data-bs-toggle="tab" data-bs-target="#logistic" type="button" role="tab">
+                    <i class="bi bi-diagram-3 me-1"></i>Regresión Logística
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="linear-tab" data-bs-toggle="tab" data-bs-target="#linear" type="button" role="tab">
+                    <i class="bi bi-graph-up me-1"></i>Regresión Lineal
+                </button>
+            </li>
+        </ul>
+        <div class="tab-content" id="evalTabsContent">
+            <div class="tab-pane fade show active" id="logistic" role="tabpanel">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-check-circle text-success me-1"></i>Accuracy (Exactitud)</h6>
+                            <p class="small text-muted mb-0">Proporción de predicciones correctas sobre el total. Útil cuando las clases están balanceadas.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-crosshair text-primary me-1"></i>Precisión y Recall</h6>
+                            <p class="small text-muted mb-0">La <strong>precisión</strong> mide cuántas predicciones positivas fueron correctas. El <strong>recall</strong> mide cuántos positivos reales fueron identificados.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-shield-shaded text-danger me-1"></i>F1-Score</h6>
+                            <p class="small text-muted mb-0">Media armónica de precisión y recall. Es la mejor métrica cuando hay clases desbalanceadas.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-grid-3x3 text-info me-1"></i>Matriz de Confusión</h6>
+                            <p class="small text-muted mb-0">Tabla que muestra VP, VN, FP, FN. La diagonal son aciertos; fuera de la diagonal son errores.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-graph-up" style="color:#6f42c1;"></i> Curva ROC / AUC</h6>
+                            <p class="small text-muted mb-0">Solo para clasificación binaria. Mide la capacidad de discriminación del modelo. AUC > 0.9 es excelente.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-bar-chart text-warning me-1"></i>Coeficientes (log-odds)</h6>
+                            <p class="small text-muted mb-0">Indican la dirección e intensidad del efecto de cada característica sobre la probabilidad de la clase.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="linear" role="tabpanel">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-r-square text-primary me-1"></i>R² (Coeficiente de Determinación)</h6>
+                            <p class="small text-muted mb-0">Proporción de la varianza explicada por el modelo. R²=1 es predicción perfecta, R²=0 es peor que la media.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-x-circle text-danger me-1"></i>RMSE</h6>
+                            <p class="small text-muted mb-0">Raíz del error cuadrático medio. Penaliza errores grandes. Está en las mismas unidades que la variable objetivo.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-calculator text-warning me-1"></i>MSE</h6>
+                            <p class="small text-muted mb-0">Error cuadrático medio. Similar al RMSE pero sin raíz, en unidades al cuadrado.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-arrows-expand text-info me-1"></i>MAE</h6>
+                            <p class="small text-muted mb-0">Error absoluto medio. Promedio simple de los errores, no penaliza más los errores grandes.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-graph-up text-success me-1"></i>Gráfico de Residuales</h6>
+                            <p class="small text-muted mb-0">Muestra la diferencia entre valor real y predicción. Idealmente los residuales se distribuyen aleatoriamente alrededor de cero.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-check-circle text-primary me-1"></i>Reales vs Predichos</h6>
+                            <p class="small text-muted mb-0">Gráfico de dispersión que compara valores reales con predicciones. Entre más cerca de la diagonal, mejor.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-box-seam me-2"></i>Paso 4: Predice nuevos valores</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h5><i class="bi bi-input-cursor me-1"></i>Formulario de predicción</h5>
+                <p>Una vez entrenado el modelo, puedes usarlo para predecir:</p>
+                <ol class="small">
+                    <li>Ve a la página de <strong>detalle del modelo</strong></li>
+                    <li>Haz clic en <span class="badge bg-success">Predecir</span></li>
+                    <li>Completa los campos con los valores de las características</li>
+                    <li>El modelo devolverá:
+                        <ul>
+                            <li><strong>Logística:</strong> la clase predicha + probabilidades</li>
+                            <li><strong>Lineal:</strong> el valor numérico predicho</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+            <div class="col-lg-6">
+                <h5><i class="bi bi-info-circle me-1"></i>Notas importantes</h5>
+                <ul class="small">
+                    <li>Los valores se <strong>escalan automáticamente</strong> al mismo rango usado durante el entrenamiento</li>
+                    <li>Usa <strong>punto (.)</strong> como separador decimal</li>
+                    <li>Para clasificación, la clase con mayor probabilidad es la predicción final</li>
+                    <li>Para regresión, el resultado es un valor numérico en las mismas unidades que la variable objetivo</li>
+                </ul>
+                <div class="alert alert-secondary py-2 small mb-0">
+                    <i class="bi bi-lightbulb me-1"></i>
+                    <strong>Ejemplo:</strong> Si entrenaste con el dataset de Diabetes, al predecir con nuevos valores médicos obtendrás la progresión estimada de la enfermedad.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h4 class="mb-0"><i class="bi bi-question-circle me-2"></i>Preguntas frecuentes</h4>
+    </div>
+    <div class="card-body">
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        ¿Qué significa que un coeficiente sea positivo o negativo?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body small">
+                        <strong>Positivo:</strong> A mayor valor de la característica, mayor la probabilidad (logística) o el valor predicho (lineal).<br>
+                        <strong>Negativo:</strong> A mayor valor de la característica, menor la probabilidad o el valor predicho.<br>
+                        La <strong>magnitud</strong> (valor absoluto) indica la fuerza del efecto. Los coeficientes están en escala estandarizada, por lo que son comparables entre sí.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        ¿Qué es el overfitting y cómo evitarlo?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body small">
+                        El <strong>overfitting</strong> ocurre cuando el modelo se ajusta demasiado a los datos de entrenamiento y no generaliza bien a datos nuevos. Señales de overfitting:
+                        <ul class="mb-0 mt-1">
+                            <li>Accuracy perfecto o casi perfecto en entrenamiento pero bajo en prueba</li>
+                            <li>Coeficientes muy grandes (valores absolutos altos)</li>
+                            <li>Cómo evitarlo: aumentar <strong>C pequeño</strong> (más regularización), aumentar <strong>test size</strong>, o conseguir más datos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        ¿Por qué mi modelo no converge?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body small">
+                        Si ves una advertencia de convergencia, prueba:
+                        <ol class="mb-0 mt-1">
+                            <li>Aumentar <strong>max_iter</strong> (500, 1000 o más)</li>
+                            <li>Verificar que los datos estén <strong>escalados</strong> (la plataforma lo hace automáticamente)</li>
+                            <li>Reducir el valor de <strong>C</strong> (más regularización ayuda a la convergencia)</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                        ¿Cuántos datos necesito para entrenar un modelo?
+                    </button>
+                </h2>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body small">
+                        Como regla general:
+                        <ul class="mb-0 mt-1">
+                            <li><strong>Mínimo:</strong> 50-100 muestras para resultados básicos</li>
+                            <li><strong>Ideal:</strong> Al menos 10 muestras por cada característica</li>
+                            <li><strong>Para clasificación:</strong> Al menos 10-20 muestras por clase</li>
+                            <li>Más datos siempre mejoran la generalización del modelo</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                        ¿Cómo interpreto el valor de R²?
+                    </button>
+                </h2>
+                <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body small">
+                        El <strong>R²</strong> (coeficiente de determinación) indica qué proporción de la variabilidad de los datos explica el modelo:
+                        <ul class="mb-0 mt-1">
+                            <li><strong>R² = 1.0:</strong> El modelo explica toda la variabilidad (predicción perfecta)</li>
+                            <li><strong>R² = 0.7:</strong> El modelo explica el 70% de la variabilidad</li>
+                            <li><strong>R² = 0.0:</strong> El modelo no explica nada (equivale a predecir siempre la media)</li>
+                            <li><strong>R² negativo:</strong> El modelo es peor que predecir el promedio</li>
+                        </ul>
+                        En ciencias sociales/biomédicas, R² > 0.3 se considera aceptable. En física/ingeniería se espera R² > 0.9.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+                        ¿Puedo subir cualquier archivo CSV?
+                    </button>
+                </h2>
+                <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body small">
+                        Sí, siempre que cumpla:
+                        <ul class="mb-0 mt-1">
+                            <li>Extensión <strong>.csv</strong></li>
+                            <li>Cabecera con nombres de columna en la primera fila</li>
+                            <li>Delimitador <strong>coma</strong> o <strong>punto y coma</strong></li>
+                            <li>Para clasificación: variable objetivo con 2-20 valores únicos</li>
+                            <li>Para regresión: variable objetivo numérica continua con al menos 5 valores distintos</li>
+                            <li>Tamaño máximo: limitado por el almacenamiento disponible (512MB en PythonAnywhere gratis)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

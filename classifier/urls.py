@@ -13,4 +13,5 @@ urlpatterns = [
     path('model/<int:pk>/predict/', views.predict_view, name='predict'),
     path('delete_dataset/<int:pk>/', views.delete_dataset, name='delete_dataset'),
     path('delete_model/<int:pk>/', views.delete_model, name='delete_model'),
+    path('tutorial/', views.tutorial, name='tutorial'),
 ]
