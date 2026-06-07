@@ -17,6 +17,7 @@ Aplicación web Django para aprendizaje supervisado con regresión logística (c
 - **Visualizaciones educativas**: Función sigmoide, efecto de regularización (C), matriz de confusión explicada, coeficientes como barras CSS interactivas.
 - **Escalado automático**: StandardScaler aplicado antes del entrenamiento; los coeficientes se interpretan en unidades de desviación estándar.
 - **Persistencia**: Modelo + scaler guardados juntos en formato joblib.
+- **Tutorial interactivo**: Guía paso a paso con explicaciones de cada funcionalidad, tabla comparativa de modelos, acordeón de parámetros, pestañas de métricas y FAQ integrado.
 
 ## Tecnologías
 
@@ -69,6 +70,7 @@ Abrir `http://localhost:8000` en el navegador.
 | `/model/<pk>/` | `model_detail` | Coeficientes, interpretación, gráficos educativos |
 | `/model/<pk>/evaluate/` | `evaluate_model` | Métricas de evaluación y gráficos |
 | `/model/<pk>/predict/` | `predict_view` | Formulario para predecir con el modelo |
+| `/tutorial/` | `tutorial` | Tutorial interactivo con guías, parámetros, métricas y FAQ |
 | `/delete_dataset/<pk>/` | `delete_dataset` | Eliminar dataset y sus modelos asociados |
 | `/delete_model/<pk>/` | `delete_model` | Eliminar un modelo entrenado |
 
@@ -170,6 +172,7 @@ regresion-lineal/
 │       ├── upload.html         # Subir CSV
 │       ├── dataset_detail.html # Detalle del dataset
 │       ├── train.html          # Entrenar modelo
+│       ├── tutorial.html       # Tutorial interactivo
 │       ├── models.html         # Lista de modelos
 │       ├── model_detail.html   # Detalle del modelo
 │       ├── evaluate.html       # Evaluación
